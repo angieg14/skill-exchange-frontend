@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🚀 Skill Exchange — Frontend
 
-## Getting Started
+Aplicación web desarrollada con **Next.js (App Router)** y **Tailwind CSS** que consume una API REST en Django. Esta plataforma permite la gestión e intercambio de habilidades, la exploración de perfiles de usuario y el seguimiento de metas de aprendizaje.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🛠️ Tecnologías
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Framework:** Next.js 15 / React 18
+- **Estilos:** Tailwind CSS
+- **Peticiones HTTP:** Axios
+- **Seguridad:** Autenticación con JWT (JSON Web Tokens)
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🏗️ Arquitectura y Decisiones de Diseño
 
-## Learn More
+El proyecto sigue un enfoque modular, escalable y basado en buenas prácticas:
 
-To learn more about Next.js, take a look at the following resources:
+1. **Componentes Globales Reutilizables (`components/ui/`):** Se centralizó la interfaz genérica (`<LoadingState />`, `<EmptyState />`, `<ErrorMessage />`, `<Pagination />`) para cumplir con el principio **DRY (Don't Repeat Yourself)** y mantener consistencia visual.
+2. **Estrategia Client vs. Server Components:** Se aprovechó el renderizado del servidor por defecto de Next.js. La directiva `"use client"` se usó estrictamente en componentes interactivos (eventos `onClick`, `onChange`) o que requieren Hooks (`useState`, `useEffect`).
+3. **Navegación Dinámica:** El `layout.jsx` del dashboard genera los enlaces dinámicamente mapeando un arreglo, facilitando la escalabilidad futura.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🧩 Módulos Implementados
 
-## Deploy on Vercel
+### 1. 💡 Habilidades (Skills)
+- **`/dashboard/skills`**: Listado general paginado. Incluye filtros de categorías (`Set` dinámico), buscador por nombre y selector de ordenamiento (A-Z / Z-A).
+- **`/dashboard/skills/[id]`**: Vista de detalle de una habilidad, generada a partir del parámetro ID en la URL.
+- **Componentes clave:** `<SkillCard />` (Renderiza niveles con colores dinámicos), `<CategoryFilter />`, `<OrderSelector />`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 2. 👥 Directorio de Usuarios (Users)
+- **`/dashboard/users`**: Listado paginado de los miembros de la plataforma.
+- **Lifting State Up & Debounce:** Se extrajo la barra de búsqueda al componente `<UserFilter />`, manteniendo el estado en el padre. Se aplicó un *Debounce* de 500ms para optimizar las peticiones al servidor mientras el usuario escribe.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 3. 🎯 Metas de Aprendizaje (Goals)
+- **`/dashboard/goals`**: Visualización y gestión de metas de estudio.
+- **Actualización Optimista (Optimistic UI):** Al marcar una meta como completada, la interfaz (`<GoalCard />`) reacciona de inmediato usando estado local, mientras la petición se envía en segundo plano.
+- **Lógica separada y Fallbacks:** El cálculo del porcentaje se modularizó en `<ProgressBar />` y se implementó *Optional Chaining* (`?.`) para evitar caídas si la API envía datos incompletos.
+
+---
+
+## 🔐 Autenticación y Consumo de API
+
+Cada petición incluye el token JWT en el header (`Authorization: Bearer {token}`). Si el token expira o es inválido, el frontend intercepta el error `401 Unauthorized`, limpia el `localStorage` y redirige automáticamente a `/login`.
+
+**Base URL:** `https://apiskills.danidev.co/api`
+
+### 🔌 Endpoints Principales Integrados:
+| Módulo | Endpoint | Método | Descripción |
+|--------|----------|--------|-------------|
+| **Skills** | `/skills/?page={p}` | `GET` | Listado y filtrado de habilidades. |
+| **Skills** | `/skills/{id}/` | `GET` | Detalle específico de una habilidad. |
+| **Users** | `/users/?page={p}&search={s}` | `GET` | Directorio de usuarios con búsqueda. |
+| **Goals** | `/goals/?page={p}` | `GET` | Listado del progreso de las metas. |
+| **Goals** | `/goals/{id}/achieve/` | `POST` | Marca una meta específica como completada. |
